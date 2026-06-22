@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import {
   Search,
   Plus,
@@ -11,6 +11,8 @@ import {
   FlaskConical,
   AlertCircle,
   Loader2,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -225,8 +227,16 @@ export default function MarketplacePage() {
                   className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
                   onClick={() => setSelectedListing(listing)}
                 >
-                  <div className="h-44 bg-gray-50 flex items-center justify-center relative border-b border-gray-100">
-                    {categoryIcon(listing.category)}
+                  <div className="h-44 bg-gray-50 flex items-center justify-center relative border-b border-gray-100 overflow-hidden">
+                    {listing.image_url ? (
+                      <img
+                        src={listing.image_url}
+                        alt={listing.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      categoryIcon(listing.category)
+                    )}
                     <span
                       className={`absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full ${categoryColors[listing.category]}`}
                     >
@@ -278,10 +288,19 @@ export default function MarketplacePage() {
             className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="h-48 bg-gray-50 flex items-center justify-center relative rounded-t-2xl border-b border-gray-100">
-              <div className="scale-150">
-                {categoryIcon(selectedListing.category)}
-              </div>
+            <div className="h-48 bg-gray-50 flex items-center justify-center relative rounded-t-2xl border-b border-gray-100 overflow-hidden">
+              {selectedListing.image_url ? (
+                <img
+                  src={selectedListing.image_url}
+                  alt={selectedListing.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="scale-150">
+                  {categoryIcon(selectedListing.category)}
+                </div>
+              )}
+
               <button
                 onClick={() => setSelectedListing(null)}
                 className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100"
@@ -368,6 +387,8 @@ function SellModal({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -377,13 +398,41 @@ function SellModal({
     unit: "trays",
     location: "",
   });
+  const fileRef = useRef<HTMLInputElement>(null);
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleImage = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be under 5MB");
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null;
+    const ext = imageFile.name.split(".").pop();
+    const fileName = `${user.id}/${Date.now()}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from("marketplace-images")
+      .upload(fileName, imageFile, { upsert: false });
+    if (error) return null;
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("marketplace-images").getPublicUrl(fileName);
+    return publicUrl;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setLoading(true);
     setError("");
+
+    const imageUrl = await uploadImage();
+
     const { error } = await supabase.from("marketplace_listings").insert({
       seller_id: user.id,
       title: form.title,
@@ -395,6 +444,7 @@ function SellModal({
       location: form.location,
       currency: "NGN",
       is_active: true,
+      image_url: imageUrl,
     });
     setLoading(false);
     if (error) setError(error.message);
@@ -421,12 +471,73 @@ function SellModal({
             <X size={16} />
           </button>
         </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
             <AlertCircle size={15} /> {error}
           </div>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Image upload */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Product Photo
+            </label>
+            <div
+              className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-300 hover:border-green-500 transition-colors cursor-pointer overflow-hidden group"
+              onClick={() => fileRef.current?.click()}
+            >
+              {imagePreview ? (
+                <>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="text-white text-sm font-semibold flex items-center gap-2">
+                      <Upload size={16} /> Change Photo
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImagePreview(null);
+                      setImageFile(null);
+                    }}
+                    className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100"
+                  >
+                    <X size={13} />
+                  </button>
+                </>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-500 transition-colors">
+                    <ImageIcon
+                      size={22}
+                      className="text-green-500 group-hover:text-white transition-colors"
+                    />
+                  </div>
+                  <p className="text-gray-400 text-sm font-medium">
+                    Click to upload product photo
+                  </p>
+                  <p className="text-gray-300 text-xs">JPG, PNG — max 5MB</p>
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) =>
+                e.target.files?.[0] && handleImage(e.target.files[0])
+              }
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Category
@@ -441,6 +552,7 @@ function SellModal({
               <option value="produce">Produce</option>
             </select>
           </div>
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Product Title *
@@ -453,6 +565,7 @@ function SellModal({
               className="w-full border-[1.5px] border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 transition-all"
             />
           </div>
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Description *
@@ -466,6 +579,7 @@ function SellModal({
               className="w-full border-[1.5px] border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 resize-none transition-all"
             />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -496,6 +610,7 @@ function SellModal({
               />
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -532,6 +647,7 @@ function SellModal({
               />
             </div>
           </div>
+
           <Button
             type="submit"
             variant="primary"
