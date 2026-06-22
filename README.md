@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# PlantSmart AI 🌱
 
-Currently, two official plugins are available:
+PlantSmart AI is a digital tool designed to help farmers and agricultural workers make better, faster, and more informed decisions in managing their crops and plant-related activities.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+It simplifies how agricultural data is organized, accessed, and used — helping users move from guesswork to data-driven farming.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚨 Problem
 
-## Expanding the ESLint configuration
+Many farmers and agricultural workers still rely on:
+- Manual record keeping
+- Guesswork for plant care decisions
+- Limited access to structured agricultural information
+- Disconnected or inefficient tools
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+This leads to:
+- Reduced productivity
+- Crop losses
+- Inefficient resource usage
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 💡 Solution
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+PlantSmart AI provides a simple, centralized platform that helps users:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Organize and manage plant and farm-related data
+- Access structured, easy-to-understand information
+- Improve decision-making around plant care and management
+- Reduce inefficiencies in daily agricultural activities
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+It acts as a bridge between traditional farming methods and smarter, more structured digital support.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🌍 Impact
+
+PlantSmart AI aims to:
+
+- Improve productivity for farmers
+- Reduce avoidable crop losses
+- Support smarter agricultural decision-making
+- Make digital tools more accessible in agriculture
+- Encourage data-driven farming practices
+
+---
+
+## 🧠 How It Helps Users
+
+- Makes farm management more structured
+- Reduces reliance on guesswork
+- Saves time in tracking and organizing information
+- Supports better planning and monitoring of crops
+
+---
+
+## 🚀 Vision
+
+To empower agricultural workers with simple, intelligent tools that make farming more efficient, predictable, and sustainable.
+
+---
+
+## 📌 Note
+
+This project is focused on usability, clarity, and real-world impact in agriculture rather than technical complexity.
+
+---
+
+## 📄 License
+
+MIT
